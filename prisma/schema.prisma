@@ -1,0 +1,228 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model category {
+  id          String     @id
+  name        String
+  slug        String     @unique(map: "Category_slug_key")
+  description String?
+  image       String?
+  icon        String?
+  showIcon    Boolean    @default(false)
+  showImage   Boolean    @default(true)
+  metaTitle   String?
+  metaDesc    String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime
+  parentId    String?
+  isIndexed   Boolean    @default(true)
+  product     product[]
+  children    category[] @relation("CategoryToCategory")
+  parent      category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
+}
+
+model extra {
+  id           String         @id
+  name         String
+  price        Float
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  productextra productextra[]
+}
+
+model variation {
+  id                String              @id
+  name              String
+  description       String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime
+  variationoption   variationoption[]
+  productvariation  productvariation[]
+}
+
+model variationoption {
+  id           String   @id
+  variationId  String
+  name         String
+  price        Float    @default(0)
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+  variation    variation @relation(fields: [variationId], references: [id], onDelete: Cascade)
+
+  @@index([variationId], map: "VariationOption_variationId_fkey")
+}
+
+model order {
+  id            String       @id
+  userId        String
+  total         Float
+  status        order_status @default(PENDING)
+  address       String?      @db.Text
+  phone         String?
+  paymentMethod String?
+  paymentId     String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime
+  user          user         @relation(fields: [userId], references: [id], map: "Order_userId_fkey")
+  orderitem     orderitem[]
+
+  @@index([userId], map: "Order_userId_fkey")
+}
+
+model orderitem {
+  id              String   @id
+  orderId         String
+  productId       String
+  quantity        Int
+  price           Float
+  extras          String?  @db.Text
+  variations      String?  @db.Text
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime
+  order           order    @relation(fields: [orderId], references: [id], map: "OrderItem_orderId_fkey")
+  product         product  @relation(fields: [productId], references: [id], map: "OrderItem_productId_fkey")
+
+  @@index([orderId], map: "OrderItem_orderId_fkey")
+  @@index([productId], map: "OrderItem_productId_fkey")
+}
+
+model page {
+  id        String   @id
+  title     String
+  slug      String   @unique(map: "Page_slug_key")
+  content   String   @db.Text
+  isFooter  Boolean  @default(false)
+  order     Int      @default(0)
+  metaTitle String?
+  metaDesc  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model product {
+  id                String              @id
+  name              String
+  slug              String              @unique(map: "Product_slug_key")
+  description       String?             @db.Text
+  price             Float
+  basePrice         Float               @default(0)
+  hasStock          Boolean             @default(false)
+  stockQuantity     Int                 @default(0)
+  noIndex           Boolean             @default(true)
+  image             String?
+  ingredients       String?             @db.Text
+  isAvailable       Boolean             @default(true)
+  metaTitle         String?
+  metaDesc          String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime
+  categoryId        String
+  orderitem         orderitem[]
+  category          category            @relation(fields: [categoryId], references: [id], map: "Product_categoryId_fkey")
+  productextra      productextra[]
+  productvariation  productvariation[]
+
+  @@index([categoryId], map: "Product_categoryId_fkey")
+}
+
+model productextra {
+  id        String   @id
+  productId String
+  extraId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  extra     extra    @relation(fields: [extraId], references: [id], map: "ProductExtra_extraId_fkey")
+  product   product  @relation(fields: [productId], references: [id], map: "ProductExtra_productId_fkey")
+
+  @@unique([productId, extraId], map: "ProductExtra_productId_extraId_key")
+  @@index([extraId], map: "ProductExtra_extraId_fkey")
+}
+
+model productvariation {
+  id          String     @id
+  productId   String
+  variationId String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime
+  variation   variation  @relation(fields: [variationId], references: [id], onDelete: Cascade)
+  product     product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, variationId], map: "ProductVariation_productId_variationId_key")
+  @@index([variationId], map: "ProductVariation_variationId_fkey")
+}
+
+model setting {
+  id                String   @id
+  siteName          String   @default("RestoranX")
+  logo              String?
+  favicon           String?
+  email             String?
+  phone             String?
+  address           String?  @db.Text
+  metaTitle         String?
+  metaDescription   String?
+  googleLoginKey    String?
+  paytrKey          String?
+  paytrSalt         String?
+  paytrMerchantId   String?
+  iyzicoKey         String?
+  iyzicoSecretKey   String?
+  iyzicoSandboxMode Boolean? @default(false)
+  smsApiKey         String?
+  smsApiSecret      String?
+  smsApiSender      String?
+  googleAnalyticsId String?
+  googleConsoleId   String?
+  navbarColor       String?
+  footerColor       String?
+  primaryColor      String?
+  secondaryColor    String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime
+}
+
+model slider {
+  id         String   @id
+  title      String?
+  subtitle   String?
+  image      String
+  buttonText String?
+  buttonLink String?
+  order      Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
+}
+
+model user {
+  id        String    @id
+  name      String?
+  email     String    @unique(map: "User_email_key")
+  password  String?
+  phone     String?
+  address   String?
+  role      user_role @default(CUSTOMER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime
+  order     order[]
+}
+
+enum order_status {
+  PENDING
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+enum user_role {
+  ADMIN
+  CUSTOMER
+}

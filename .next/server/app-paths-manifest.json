@@ -1,0 +1,13 @@
+{
+  "/admin/products/[id]/page": "app/admin/products/[id]/page.js",
+  "/admin/products/page": "app/admin/products/page.js",
+  "/admin/variations/page": "app/admin/variations/page.js",
+  "/api/admin/categories/route": "app/api/admin/categories/route.js",
+  "/api/admin/extras/route": "app/api/admin/extras/route.js",
+  "/api/admin/products/[id]/route": "app/api/admin/products/[id]/route.js",
+  "/api/admin/products/route": "app/api/admin/products/route.js",
+  "/api/admin/variations/route": "app/api/admin/variations/route.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/page": "app/page.js"
+}
